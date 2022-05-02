@@ -5,7 +5,7 @@
   library(shinyWidgets)
   library(reactable)
   library(tidyverse)
-  source("AxelrodCopy.R")
+  source("code.R")
 
 
 ui <- fluidPage(
