@@ -54,19 +54,23 @@ ui <- fluidPage(
                                 fluidRow(div(titlePanel("Tournament"), align = "center")),
                                 fluidRow(
                                   column(4,
-                                    awesomeCheckboxGroup("checkstrats", "Choose Strategies", choices = names(strats))
+                                    awesomeCheckboxGroup("checkstrats", "Choose Strategies", choices = names(strats)),
+                                    numericInput("brnoise", label = list(icon("info-circle") |> 
+                                    bs_embed_tooltip(title = "nonzero probability that a cooperation will accidentally be changed 
+                                                     into a defection action and vice versa."), "% Noise"),
+                                    value = 0, min = 0, max = 100)
                                     ),
                                   column(5,
                                     numericInput("tmoves", label = "Moves", value = 100, min = 30, max = 500),
                                     fluidRow(
                                       column(6,
                                              numericInput("Rew", value = 3, 
-                                                          label = list(icon("info-circle") %>% bs_embed_tooltip(title = "Reward,
+                                                          label = list(icon("info-circle") |> bs_embed_tooltip(title = "Reward,
                                                                                                                 the payout from both players cooperating"), "R")
                                              )
                                              ),
                                       column(6,
-                                             numericInput("Suc", value = 0, label = list(icon("info-circle") %>%
+                                             numericInput("Suc", value = 0, label = list(icon("info-circle") |> 
                                                                                            bs_embed_tooltip(title = "Sucker, typically the smallest payout.
                                                The result of a beneficiary player defecting and another player cooperating"), "S")) 
                                               
@@ -74,12 +78,12 @@ ui <- fluidPage(
                                       ),
                                     fluidRow(
                                       column(6,
-                                             numericInput("Tem", value = 5, label = list(icon("info-circle") %>% 
+                                             numericInput("Tem", value = 5, label = list(icon("info-circle") |> 
                                                           bs_embed_tooltip(title = "Temptation, typically the largest payout.
                                                The result of a player benefiting from defecting and another player cooperating"), "T"))
                                                ),
                                       column(6,
-                                             numericInput("Pun", value = 1, label = list(icon("info-circle") %>% 
+                                             numericInput("Pun", value = 1, label = list(icon("info-circle") |> 
                                                                                            bs_embed_tooltip(title = "Punishment, 
                                                                                                             the result of both players defecting"), "P"))
                                              ))
@@ -144,7 +148,11 @@ ui <- fluidPage(
                                                numericInput("Pu", value = 1, label = list(icon("info-circle") %>% 
                                                                                              bs_embed_tooltip(title = "Punishment, 
                                                                                                             the result of both players defecting"), "P"))
-                                        ))
+                                        ),
+                                        column(2, numericInput("singlenoise", label = list(icon("info-circle") |> 
+                                        bs_embed_tooltip(title = "nonzero probability that a cooperation will accidentally be changed 
+                                                     into a defection action and vice versa."), "% Noise"),
+                                                               value = 0, min = 0, max = 100)))
                                     ),
                                 column(8,
                                        plotOutput("battle")
@@ -205,14 +213,15 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   introjs(session)
   
-  #give a warning to user instead of an error message
+  #give a warning to user instead of an error message, battle data
   data <- reactive(if(input$strategy1 != "" & input$strategy2 != "") {
-    battle((strats[[input$strategy1]]), strats[[input$strategy2]], input$moves, 
-           payoffs = c(input$Te, input$Re, input$Pu, input$Su))
+    battle((strat1 = strats[[input$strategy1]]), strat2 = strats[[input$strategy2]], move =  input$moves, 
+           payoffs = c(input$Te, input$Re, input$Pu, input$Su), noise = input$singlenoise)
   } else {
     warning("Select your strategies")
   })
-
+  
+  #linear line plot data
   plot_data <- reactive(myplot(data(), input$moves, input$strategy1, input$strategy2))
   
   output$battle <- renderPlot( plot_data()[[1]] )
@@ -222,7 +231,7 @@ server <- function(input, output, session) {
   long_game <- reactive(
     battle_royale(
       strats[input$checkstrats],strats[input$checkstrats], input$tmoves,
-      payoffs = c(input$Tem, input$Rew, input$Pun, input$Suc)
+      payoffs = c(input$Tem, input$Rew, input$Pun, input$Suc), noise = input$brnoise
       ))
   
   sumtable <- reactive(
@@ -244,7 +253,7 @@ server <- function(input, output, session) {
     bindEvent(input$rungame)
   
   output$heatmap <- renderPlot( heatm(long_game()[["table"]]) ) %>% 
-    bindCache(input$tmoves,input$checkstrats, input$Tem, input$Suc, input$Rew, input$Pun) %>% 
+    bindCache(input$tmoves,input$checkstrats, input$Tem, input$Suc, input$Rew, input$Pun, input$brnoise) %>% 
     bindEvent(input$rungame)
   
   output$allplot <- renderPlot( allPlot(sumtable()) ) %>% bindEvent(input$rungame)
@@ -273,12 +282,12 @@ server <- function(input, output, session) {
   
   observe({
     updateAwesomeCheckboxGroup(inputId = "checkstrats", selected = "")
-    map2(c("Tem","Rew", "Pun", "Suc", "tmoves"),c(5,3,1,0, 100), ~ updateNumericInput(inputId = .x, value = .y))
+    map2(c("Tem","Rew", "Pun", "Suc", "tmoves", "brnoise"),c(5,3,1,0, 100, 0), ~ updateNumericInput(inputId = .x, value = .y))
   }) %>% bindEvent(input$reset1)
   
   #reset button for drop down list
   observe({
-    map2(c("Te","Re", "Pu", "Su"),c(5,3,1,0), ~ updateNumericInput(inputId = .x, value = .y))
+    map2(c("Te","Re", "Pu", "Su", "singlenoise"),c(5,3,1,0, 0), ~ updateNumericInput(inputId = .x, value = .y))
   }) %>% bindEvent(input$reset2)
   
 

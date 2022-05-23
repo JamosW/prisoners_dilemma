@@ -2,8 +2,7 @@
 #containment for functions step 1
 generate_strats <- function(x) {
   
-
-  choices <- c(1, 0)
+  choices = c(1,0)
   
   all_d <- function(move = NULL, opp.choices = NULL) choices[2] 
   
@@ -75,30 +74,41 @@ generate_strats <- function(x) {
 strats <- generate_strats()
 
 #step 2, two stratagies face off
-battle <- function(strat1,strat2, move = 1, payoffs = NULL) { 
+battle <- function(strat1,strat2, move = 1, payoffs = NULL, noise = 0) { 
   
   if (is.numeric(move)) {
     
     #score check to be used inside and outside of loop (first choice)
     score_check <- function(str1, str2) {
       
-      dplyr::case_when(str1 == choices[1] & str2 == choices[1] ~ rep(payoffs[2], 2),
-                       str1 == choices[1] & str2 == choices[2] ~ c(payoffs[4],payoffs[1]),
-                       str1 == choices[2] & str2 == choices[1] ~ c(payoffs[1],payoffs[4]),
-                       TRUE ~ rep(payoffs[3],2))
+      #possible choices 1 = cooperate, noise of 0 = no noise
+      if(noise  == 0) {
+        choices <- c(1,0)
+      } else {
+        #the cooperation is affected by noise
+        choices <- c(sample(c(1,0), 1, replace = TRUE, prob = c(100 - noise , 0 + noise )), 0)
+      }
+      
+        dplyr::case_when(str1 == choices[1] & str2 == choices[1] ~ rep(payoffs[2], 2),
+                         str1 == choices[1] & str2 == choices[2] ~ c(payoffs[4],payoffs[1]),
+                         str1 == choices[2] & str2 == choices[1] ~ c(payoffs[1],payoffs[4]),
+                         TRUE ~ rep(payoffs[3],2))
+      
     }
     
-    #store strategy choices, given amount of moves
+    #store strategy choices, given amount of moves, record the first move
     str_choices <- list(s1 = strat1(1), s2 = strat2(1))
     
-    choices <- c(1,0)#possible choices 1 = cooperate
+    
+    
     #check payoffs for null and type
     if(!is.null(payoffs) & length(payoffs) == 4 & is.numeric(payoffs)) {
       payoffs = payoffs
     } else {
       payoffs <- c(5,3,1,0) #payoffs
     }
-    scores <- c(score_check(str_choices$s1, str_choices$s2))#first choice store before loop
+    #first choice store before loop
+    scores <- c(score_check(str_choices$s1, str_choices$s2))
 
     if(move > 1) {
       for (i in length(scores):move ) {
@@ -117,16 +127,16 @@ battle <- function(strat1,strat2, move = 1, payoffs = NULL) {
     stop("move must be numeric or integer")
   }
     
-    return(scores[seq(1, length(scores), by = 2)])
+    return(scores[seq(from = 1, to = length(scores), by = 2)])
 }
 
-battle_royale <- function(strats1,strats2, moves, payoffs = NULL) {
+battle_royale <- function(strats1,strats2, moves, payoffs = NULL, noise = 0) {
   
   #battle each strategy and convert values to tibble
   dat <- map(strats1, function(a) {
     as_tibble(
       map(strats2, function(b) {
-        battle(a,b, moves, payoffs)
+        battle(a,b, moves, payoffs, noise = noise)
       }))
   }) %>%  
     map(function(x) {
@@ -289,6 +299,7 @@ stratText <- function(strat) {
          it cooperates on the second and third moves but defects
                           every other move after that."))
 }
+
 
 
 
