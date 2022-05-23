@@ -5,7 +5,7 @@
   library(shinyWidgets)
   library(reactable)
   library(tidyverse)
-  source("code.R")
+  source("AxelrodCopy.R")
 
 
 ui <- fluidPage(
@@ -99,7 +99,7 @@ ui <- fluidPage(
                                          br(),
                                          fluidRow(
                                            column(6,
-                                                  actionButton( "reset", "Reset"))
+                                                  actionButton( "reset1", "Reset"))
                                          ))
                                 ),
                                 width = 4
@@ -115,20 +115,24 @@ ui <- fluidPage(
                                         icon("cog"),
                                         data.step = 2,
                                         data.intro = "After selecting your strategies, you can alter the parameters of the game"
-                                      ),
+                                        ),
                                       fluidRow(
                                         column(2,
                                                numericInput("Re", value = 3, 
                                                             label = list(icon("info-circle") %>% bs_embed_tooltip(title = "Reward,
-                                                                                                                the payout from both players cooperating"), "R")
-                                               )
-                                        ),
+                                                                                                                the payout from both players cooperating"), "R"))
+                                               ),
                                         column(2,
                                                numericInput("Su", value = 0, label = list(icon("info-circle") %>%
                                                                                              bs_embed_tooltip(title = "Sucker, typically the smallest payout.
-                                               The result of a player defecting and a benefiting player cooperating"), "S")) 
-                                               
-                                        ),
+                                               The result of a player defecting and a benefiting player cooperating"), "S"))
+                                               ),
+                                        column(2,
+                                               offset =6,
+                                               actionButton("reset2",
+                                                          label = "Reset"
+                                                          )
+                                               )
                                       ),
                                       fluidRow(
                                         column(2,
@@ -266,12 +270,20 @@ server <- function(input, output, session) {
                                      "Always Defect" = format(strats$`Always Defect`),
                                      "Permanent Retaliation" = format(strats$`Permanent Retaliation`)
   ))
-
   
   observe({
     updateAwesomeCheckboxGroup(inputId = "checkstrats", selected = "")
     map2(c("Tem","Rew", "Pun", "Suc", "tmoves"),c(5,3,1,0, 100), ~ updateNumericInput(inputId = .x, value = .y))
-  }) %>% bindEvent(input$reset)
+  }) %>% bindEvent(input$reset1)
+  
+  #reset button for drop down list
+  observe({
+    map2(c("Te","Re", "Pu", "Su"),c(5,3,1,0), ~ updateNumericInput(inputId = .x, value = .y))
+  }) %>% bindEvent(input$reset2)
+  
+
+  
+  
   
 }
 
