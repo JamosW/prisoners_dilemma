@@ -13,5 +13,5 @@ It primarily serves as a visualization tool and something to just have a little 
 4. ~~Add more functionality to dropdown button -------------- easy~~,
 5. Add more strategies like win-stay lose-shift ----------------- easy,
 6. Incorporate a "listener" for the weight of the future (w) ------------------ medium,
-7. ~~~Implement "random noise" ------------------- easy, ~~~
+7. ~~~Implement "random noise" ------------------- easy,~~~
 8. Tournament result text --------------- easy
