@@ -43,3 +43,5 @@ follow?
 
 5. Improve recognition abilities
 - The ability to recognize the other player from past interactions, and to remember the relevant features of those interactions, is necessary to sustain cooperation.
+
+[Test out the app here](https://prisoners.shinyapps.io/Prisoners/) 
