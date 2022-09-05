@@ -10,7 +10,7 @@ In life there are many instances of prisoners dilemma's that one will encounter,
 2. Steroids use in sports
 3. The job market 
 
-If you don't intend on readin the book (you should!) here are some insights I grabbed from reading the book and maybe you'll discover while using this shiny app.
+If you don't intend on reading the book (you should!) here are some insights I grabbed from reading the book and maybe you'll discover while using this shiny app.
 
 ***How to escape the prisoners dilemma***
 1. Threaten the other player wtih a punishment for not playing in your favor
